@@ -1,7 +1,9 @@
 import java.util.*;
 
 public class Person {
-	private final int RWAL = 21; // RWAL - Recommended Weekly Alcohol Limit
+	private final static Scanner scanner = new Scanner(System.in);
+	private final static int RWAL = 21; // RWAL - Recommended Weekly Alcohol Limit
+
 	private double cmHeight;
 	private double kgWeight;
 	private boolean smoker = true;
@@ -42,16 +44,15 @@ public class Person {
 	public void promptSettings() {
 		System.out.println("-------- Settings Start --------");
 
-		try (Scanner scanner = new Scanner(System.in)) {
-			System.out.print("Height (cm):\t\t");
-			cmHeight = scanner.nextDouble();
-			System.out.print("Weight (kg):\t\t");
-			kgWeight = scanner.nextDouble();
-			System.out.print("Weekly Alchol Units:\t");
-			weeklyAlcholUnits = scanner.nextInt();
-			System.out.print("Rest Pulse:\t\t");
-			restPulse = scanner.nextInt();
-		}
+		System.out.print("Height (cm):\t\t");
+		cmHeight = scanner.nextDouble();
+		System.out.print("Weight (kg):\t\t");
+		kgWeight = scanner.nextDouble();
+		System.out.print("Weekly Alchol Units:\t");
+		weeklyAlcholUnits = scanner.nextInt();
+		System.out.print("Rest Pulse:\t\t");
+		restPulse = scanner.nextInt();
+		scanner.close();
 
 		displayProfile();
 	}
