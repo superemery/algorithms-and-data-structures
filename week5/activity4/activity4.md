@@ -53,7 +53,7 @@ The above equation has been proved to have a running time of Ө(n2) in Exercise 
 # Exercise 4
 *During the running of the procedure RANDOMIZED-QUICKSORT, how many calls are made to the random-number generator RANDOM in the worst case? How does the answer change in the best case?*
 
-The number of calls for RANDOM equals to of RANDOMIZED-PARTITION, n-1
+The recursion in RANDOMIZED-QUICKSORT stops when p >= r, i.e. when the subarray has zero or one element. In the worst case, there will be n - 1 call to RANDOM since the size of one subarray is zero in each recursion. In contrast, in the best case, where the pivot element is always the mid-value, the number of calls to RANDOM equals the number of internal nodes of the recursion tree.
 
 # Exercise 5
 *Why do we expect the average-case performance of a randomised algorithm and not its worst-case performance?*
