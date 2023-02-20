@@ -93,6 +93,27 @@ NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL  NIL  NIL  NIL  NIL  NIL  NIL
                  19
 ```
 
+**Right Rotate 12, 9, 5, 2**
+```
+1                  
+ \                 
+  5                
+   \               
+    9              
+     \             
+      12           
+        \          
+         15        
+           \       
+            17     
+              \    
+               18  
+                 \ 
+                 19
+```
+
+
+
 # Exercise 3
 *Show the red-black trees that result after successively inserting the keys 45, 49, 19, 12, 31, 38, 41 sequentially into an initially empty red-black tree.*
 
@@ -213,7 +234,7 @@ NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL  NIL  NIL  NIL  NIL  NIL  NIL
 # Exercise 5
 *In line 16 of RB-INSERT, we set the colour of the newly inserted node x to red. Notice that if we had chosen to set x's colour to black, then property 4 of a red-black tree would not be violated. Why didn't we choose to set x's colour to black?*
 
-It's likely to violate property 5, saying that all paths from a node to descendant leaves must have an equal number of black nodes.
+Setting x's color to black will violate property 5, saying that all paths from a node to descendant leaves must have an equal number of black nodes.
 
 # Exercise 6
 *Write pseudocode for RIGHT-ROTATE.*

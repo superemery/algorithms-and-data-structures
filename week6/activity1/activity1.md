@@ -1,17 +1,17 @@
 # Exercise 1
 *Demonstrate the insertion of the keys 5, 28, 19, 15, 20, 33, 12, 17, 10 into a hash table with collisions resolved by chaining. Let the table have 9 slots, and let the hash function be h(k) = k mod 9.*
 
-| key \ slot | 0   | 1          | 2   | 3   | 4   | 5   | 6     | 7   | 8   |
-| ---------- | --- | ---------- | --- | --- | --- | --- | ----- | --- | --- |
-| 5          |     |            |     |     |     | 5   |       |     |     |
-| 28         |     | 28         |     |     |     | 5   |       |     |     |
-| 19         |     | 28->19     |     |     |     | 5   |       |     |     |
-| 15         |     | 28->19     |     |     |     | 5   | 15    |     |     |
-| 20         |     | 28->19     | 2   |     |     | 5   | 15    |     |     |
-| 33         |     | 28->19     | 2   |     |     | 5   | 15->6 |     |     |
-| 12         |     | 28->19     | 2   | 3   |     | 5   | 15->6 |     |     |
-| 17         |     | 28->19     | 2   | 3   |     | 5   | 15->6 |     | 8   |
-| 10         |     | 28->19->10 | 2   | 3   |     | 5   | 15->6 |     | 8   |
+| key \ slot | 0   | 1          | 2   | 3   | 4   | 5   | 6      | 7   | 8   |
+| ---------- | --- | ---------- | --- | --- | --- | --- | ------ | --- | --- |
+| 5          |     |            |     |     |     | 5   |        |     |     |
+| 28         |     | 28         |     |     |     | 5   |        |     |     |
+| 19         |     | 19->28     |     |     |     | 5   |        |     |     |
+| 15         |     | 19->28     |     |     |     | 5   | 15     |     |     |
+| 20         |     | 19->28     | 20  |     |     | 5   | 15     |     |     |
+| 33         |     | 19->28     | 20  |     |     | 5   | 33->15 |     |     |
+| 12         |     | 19->28     | 20  | 12  |     | 5   | 33->15 |     |     |
+| 17         |     | 19->28     | 20  | 12  |     | 5   | 33->15 |     | 17  |
+| 10         |     | 10->19->28 | 20  | 12  |     | 5   | 33->15 |     | 17  |
 
 # Exercise 2
 *Consider inserting the keys 10, 22, 31, 4, 15, 28, 17, 88, 59 into a hash table of length m = 11 using open addressing with the primary hash function h(k) = k mod m. Illustrate the result of inserting these keys using linear probing and quadratic probing.*
@@ -41,10 +41,10 @@ Set c1 = 0 and c2 = 1 for the quadratic hash hq(k, i) = (h(k) + c1*i + c2*i^2) %
 | 31         | 22  |     |     |     |     |     |     |     |     | 31  | 10  |
 | 4          | 22  |     |     |     | 4   |     |     |     |     | 31  | 10  |
 | 15         | 22  |     |     |     | 4   | 15  |     |     |     | 31  | 10  |
-| 28         | 22  |     |     |     | 4   | 15  |     |     | 28  | 31  | 10  |
-| 17         | 22  |     |     |     | 4   | 15  |     |     | 28  | 31  | 10  |
-| 88         | 22  | 88  |     |     | 4   | 15  |     |     | 28  | 31  | 10  |
-| 59         | 22  | 88  | 59  |     | 4   | 15  |     |     | 28  | 31  | 10  |
+| 28         | 22  |     |     |     | 4   | 15  | 28  |     |     | 31  | 10  |
+| 17         | 22  |     |     |     | 4   | 15  | 28  | 17  |     | 31  | 10  |
+| 88         | 22  | 88  |     |     | 4   | 15  | 28  | 17  |     | 31  | 10  |
+| 59         | 22  | 88  |     |     | 4   | 15  | 28  | 17  | 59  | 31  | 10  |
 
 # Exercise 3
 *Consider a dynamic set S that is represented by a direct-address table T of length m. Write pseudocode for a procedure (say MAX-DAT (T, m)) that finds the maximum element of S.*
