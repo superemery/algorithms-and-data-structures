@@ -16,7 +16,7 @@ A=<13, 12, 9, 5, 6, 8, 7, 4, 0, 1, 2>
 # Exercise 4
 *Draw the resulting binary heap after the operation MAX-HEAP-INSERT (A, 10) on the heap A=<15, 13, 9, 5, 12, 8, 7, 4, 0, 6, 2, 1>*
 
-A=<15, 13, 10, 5, 12, 8, 7, 4, 0, 6, 2, 1, 8>
+A=<15, 13, 10, 5, 12, 9, 7, 4, 0, 6, 2, 1, 8>
 
 # Exercise 5
 *Build a Huffman code for the following symbols with frequency:*
