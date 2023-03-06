@@ -1,3 +1,4 @@
+import java.lang.reflect.Field;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.*;
 import java.util.function.*;
@@ -6,74 +7,47 @@ public class CarShop {
     public static void main(String[] args) {
         CarShop shop = new CarShop();
 
-        shop.store("Honda", "Fit", 2013, 200_500, 1.3, "A", 5_550.50);
-        shop.store("Toyota", "Prius", 2012, 88_000, 1.8, "A", 8_450.00);
-        shop.store("Volkswagen", "Golf", 2016, 74_550, 1.5, "B", 12_500.00);
-        shop.store("Toyota", "Yaris", 2011, 110_100, 1.0, "A", 6_500.50);
-        shop.store("Toyota", "Prius", 2015, 52_300, 1.8, "C", 9_999.95);
-        shop.store("Volkswagen", "Polo", 2012, 140_820, 1.2, "B", 3_050.50);
+        enterCarInfo(shop);
 
-        displayReport(shop.search("price", false));
-        displayReport(shop.search(5));
+        // add car info
+        shop.store(shop.new CarInfo("Honda", "Fit", 2013, 200500, 1.3, "A", 5550.50));
+        shop.store(shop.new CarInfo("Toyota", "Prius", 2012, 88000, 1.8, "A", 8450.00));
+        shop.store(shop.new CarInfo("Volkswagen", "Golf", 2016, 74550, 1.5, "B", 12500.00));
+        shop.store(shop.new CarInfo("Toyota", "Yaris", 2011, 110100, 1.0, "A", 6500.50));
+        shop.store(shop.new CarInfo("Toyota", "Prius", 2015, 52300, 1.8, "C", 9999.95));
+        shop.store(shop.new CarInfo("Volkswagen", "Polo", 2012, 140820, 1.2, "B", 3050.50));
+
+        shop.showSorted("price", false, true);
+        shop.showHighest("price", true);
+        shop.showLowest("price", true);
+        shop.showStocks();
     }
 
-    private static void displayReport(CarInfo... data) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(padEnd("ID", 5));
-        builder.append(padEnd("Manufacturer", 15));
-        builder.append(padEnd("Model", 8));
-        builder.append(padEnd("Year", 7));
-        builder.append(padEnd("Mileage", 12));
-        builder.append(padEnd("Engine Size", 14));
-        builder.append(padEnd("Grade", 8));
-        builder.append(padEnd("Price", 10));
-
-        System.out.println(builder);
-        builder.delete(0, builder.length());
-
-        for (CarInfo info : data) {
-            builder.append(padEnd(Integer.toString(info.getId()), 5));
-            builder.append(padEnd(info.getManufacturer(), 15));
-            builder.append(padEnd(info.getModel(), 8));
-            builder.append(padEnd(Integer.toString(info.getYear()), 7));
-            builder.append(padEnd(String.format("%.2f", info.getMileage()), 12));
-            builder.append(padEnd(String.format("%.1f", info.getEngineSize()) + "L", 14));
-            builder.append(padEnd(info.getGrade(), 8));
-            builder.append(padEnd("£" + String.format("%.2f", info.getPrice()), 10));
-
-            System.out.println(builder);
-            builder.delete(0, builder.length());
-        }
-    }
-
-    private static String padEnd(String text, int maxLength) {
-        while (text.length() < maxLength)
-            text += " ";
-
-        return text;
-    }
-
-    private static void buildCarData(CarShop shop) {
-        final String[] gradeOptions = { "A", "B", "C", "D" };
+    private static void enterCarInfo(CarShop shop) {
+        final String[] validGrades = { "A", "B", "C", "D" };
 
         Boolean shouldContinue = true;
 
         while (shouldContinue) {
-            String manufacturer = readInput(String.class, "Manufacturer: ", null);
-            String model = readInput(String.class, "Model: ", null);
-            String grade = readInput(String.class, "Grade (A/B/C/D): ",
-                    v -> Arrays.stream(gradeOptions).anyMatch(o -> o.equals(v)));
-            int year = readInput(Integer.class, "Year: ", v -> v > 0);
-            double mileage = readInput(Double.class, "Mileage: ", v -> v > 0);
-            double price = readInput(Double.class, "Price (£): ", v -> v > 0);
-            double engineSize = readInput(Double.class, "Engine Size (L): ", v -> v > 0);
-
-            shop.store(manufacturer, model, year, mileage, engineSize, grade, price);
-
-            String result = readInput(String.class, "Data created. Continue? (Y/N): ",
+            String result = readInput(String.class, "Create new data? (Y/N): ",
                     v -> (v.equals("Y") || v.equals("N")));
 
             shouldContinue = result.equals("Y");
+
+            if (!shouldContinue)
+                break;
+
+            String manufacturer = readInput(String.class, "Manufacturer: ", null);
+            String model = readInput(String.class, "Model: ", null);
+            String grade = readInput(String.class, "Grade (A/B/C/D): ",
+                    v -> Arrays.stream(validGrades).anyMatch(g -> g.equals(v)));
+            int year = readInput(Integer.class, "Year: ", v -> v >= 2000);
+            double mileage = readInput(Double.class, "Mileage: ", v -> v >= 0.0);
+            double price = readInput(Double.class, "Price (£): ", v -> v > 0.0);
+            double engineSize = readInput(Double.class, "Engine Size (L): ", v -> v >= 1.0);
+
+            shop.store(shop.new CarInfo(manufacturer, model, year, mileage, engineSize, grade, price));
+            System.out.println("----- DATA CREATED -----");
         }
     }
 
@@ -82,7 +56,7 @@ public class CarShop {
      * validation conditions.
      * 
      * @param <T>          Can be String, Integer, or Double
-     * @param type         A generic Class object indicating the output type
+     * @param type         Assign the output type of this method
      * @param title        The text to show before reading from the console
      * @param validateFunc A function delegate validating the parsed input value
      * @return A value of type T
@@ -119,146 +93,308 @@ public class CarShop {
         }
     }
 
-    private ArrayList<CarInfo> dataList;
-    private Map<Integer, CarInfo> dataMap;
+    private final CarInfoStore infoStore;
+    private final CarGradeStore gradeStore;
+    private final CarStockStore stockStore;
 
     public CarShop() {
-        dataList = new ArrayList<>();
-        dataMap = new HashMap<>();
+        infoStore = new CarInfoStore();
+        gradeStore = new CarGradeStore();
+        stockStore = new CarStockStore();
+
+        // add default car grade
+        gradeStore.store(new CarGrade("A", "Excellent", "Very slightly used, virtually as good as new."));
+        gradeStore.store(new CarGrade("B", "Good", "Good condition but with visible flaws."));
+        gradeStore.store(new CarGrade("C", "Average", "Average condition, with minor damage."));
+        gradeStore.store(new CarGrade("D", "Poor",
+                "Poor condition with significant damage, but the car is functional."));
     }
 
-    public void store(String manufacturer, String model,
-            int year, double mileage, double engineSize, String grade, double price) {
-        int id = this.dataList.size() + 1;
-        CarInfo info = this.new CarInfo(id);
-        info.setManufacturer(manufacturer);
-        info.setModel(model);
-        info.setYear(year);
-        info.setMileage(mileage);
-        info.setGrade(grade);
-        info.setPrice(price);
-        info.setEngineSize(engineSize);
-        dataList.add(info);
-        dataMap.put(id, info);
+    public void store(CarInfo info) {
+        infoStore.store(info);
+        stockStore.store(info);
     }
 
-    private CarInfo[] getDataList() {
-        return dataList.toArray(new CarInfo[dataList.size()]);
+    public void showSorted(String sortKey, Boolean descending, Boolean useCondition) {
+        CarInfo[] sorted = infoStore.sort(sortKey, descending);
+        showInfos(useCondition, sorted);
     }
 
-    public CarInfo search(int id) {
-        return dataMap.get(id);
+    public void showHighest(String searchKey, Boolean useCondition) {
+        CarInfo info = infoStore.search(searchKey, true);
+
+        if (info != null)
+            showInfos(useCondition, info);
     }
 
-    public CarInfo search(String key, Boolean heighest) {
-        BiFunction<CarInfo, CarInfo, Boolean> comparator = getComparator(key, heighest);
-        CarInfo info = dataList.get(0);
+    public void showLowest(String searchKey, Boolean useCondition) {
+        CarInfo info = infoStore.search(searchKey, false);
 
-        for (int i = 1; i < dataList.size(); i++) {
-            if (comparator.apply(dataList.get(i), info))
-                info = dataList.get(i);
+        if (info != null)
+            showInfos(useCondition, info);
+    }
+
+    private void showInfos(Boolean useCondition, CarInfo... infos) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(padEnd("ID", 5));
+        builder.append(padEnd("Manufacturer", 15));
+        builder.append(padEnd("Model", 8));
+        builder.append(padEnd("Year", 7));
+        builder.append(padEnd("Mileage", 12));
+        builder.append(padEnd("Engine Size", 14));
+
+        if (useCondition)
+            builder.append(padEnd("Condition", 12));
+        else
+            builder.append(padEnd("Grade", 8));
+
+        builder.append(padEnd("Price", 10));
+
+        System.out.println(builder);
+        builder.delete(0, builder.length());
+
+        for (CarInfo info : infos) {
+            builder.append(padEnd(String.format("%d", info.id), 5));
+            builder.append(padEnd(info.manufacturer, 15));
+            builder.append(padEnd(info.model, 8));
+            builder.append(padEnd(String.format("%d", info.year), 7));
+            builder.append(padEnd(String.format("%.2f", info.mileage), 12));
+            builder.append(padEnd(String.format("%.1fL", info.engineSize), 14));
+
+            if (useCondition)
+                builder.append(padEnd(gradeStore.search("grade", info.grade).condition, 12));
+            else
+                builder.append(padEnd(info.grade, 8));
+
+            builder.append(padEnd(String.format("£%.2f", info.price), 10));
+
+            System.out.println(builder);
+            builder.delete(0, builder.length());
         }
 
-        return info;
+        System.out.println();
     }
 
-    public void sort(String key) throws IllegalArgumentException {
-        BiFunction<CarInfo, CarInfo, Boolean> comparator = getComparator(key, false);
+    public void showStocks() {
+        CarStock[] stocks = stockStore.toArray();
 
-        dataList.sort((a, b) -> comparator.apply(a, b) ? -1 : 1);
-    }
+        StringBuilder builder = new StringBuilder();
+        builder.append(padEnd("ID", 5));
+        builder.append(padEnd("Manufacturer", 15));
+        builder.append(padEnd("Number", 9));
+        builder.append(padEnd("Price", 10));
 
-    private BiFunction<CarInfo, CarInfo, Boolean> getComparator(String key, Boolean descending) {
-        BiFunction<CarInfo, CarInfo, Boolean> comparator;
+        System.out.println(builder);
+        builder.delete(0, builder.length());
 
-        switch (key) {
-            case "id":
-                comparator = (a, b) -> a.getId() < b.getId();
-                break;
-            case "manufacturer":
-                comparator = (a, b) -> a.getManufacturer().compareTo(b.getManufacturer()) < 0;
-                break;
-            case "model":
-                comparator = (a, b) -> a.getModel().compareTo(b.getModel()) < 0;
-                break;
-            case "grade":
-                comparator = (a, b) -> a.getGrade().compareTo(b.getGrade()) < 0;
-                break;
-            case "year":
-                comparator = (a, b) -> a.getYear() < b.getYear();
-                break;
-            case "mileage":
-                comparator = (a, b) -> a.getMileage() < b.getMileage();
-                break;
-            case "price":
-                comparator = (a, b) -> a.getPrice() < b.getPrice();
-                break;
-            case "engineSize":
-                comparator = (a, b) -> a.getEngineSize() < b.getEngineSize();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid key: " + key);
+        for (CarStock stock : stocks) {
+            builder.append(padEnd(String.format("%d", stock.id), 5));
+            builder.append(padEnd(stock.manufacturer, 15));
+            builder.append(padEnd(String.format("%d", stock.number), 9));
+            builder.append(padEnd(String.format("£%.2f", stock.price), 10));
+
+            System.out.println(builder);
+            builder.delete(0, builder.length());
         }
 
-        return descending ? (a, b) -> !comparator.apply(a, b) : comparator;
+        System.out.println();
+    }
+
+    private static String padEnd(String text, int maxLength) {
+        while (text.length() < maxLength)
+            text += " ";
+
+        return text;
+    }
+
+    public class CarInfoStore {
+        private ArrayList<CarInfo> infoList;
+        private Map<Integer, CarInfo> infoMap;
+
+        public CarInfoStore() {
+            infoList = new ArrayList<>();
+            infoMap = new LinkedHashMap<>();
+        }
+
+        public void store(CarInfo info) {
+            info.id = this.infoList.size() + 1;
+            infoList.add(info);
+            infoMap.put(info.id, info);
+        }
+
+        public CarInfo search(int id) {
+            return infoMap.get(id);
+        }
+
+        public CarInfo search(String key, Boolean heighest) {
+            BiFunction<CarInfo, CarInfo, Boolean> comparator = getComparator(key, heighest);
+            CarInfo info = infoList.get(0);
+
+            for (int i = 1; i < infoList.size(); i++) {
+                if (comparator.apply(infoList.get(i), info))
+                    info = infoList.get(i);
+            }
+
+            return info;
+        }
+
+        public CarInfo[] sort(String key, Boolean descending) {
+            BiFunction<CarInfo, CarInfo, Boolean> comparator = getComparator(key, descending);
+
+            infoList.sort((a, b) -> comparator.apply(a, b) ? -1 : 1);
+
+            return infoList.toArray(new CarInfo[infoList.size()]);
+        }
+
+        public CarInfo[] toArray() {
+            return infoList.toArray(new CarInfo[infoList.size()]);
+        }
+
+        private BiFunction<CarInfo, CarInfo, Boolean> getComparator(String key, Boolean descending) {
+            BiFunction<CarInfo, CarInfo, Boolean> comparator;
+
+            switch (key) {
+                case "id":
+                    comparator = (a, b) -> a.id < b.id;
+                    break;
+                case "manufacturer":
+                    comparator = (a, b) -> a.manufacturer.compareTo(b.manufacturer) < 0;
+                    break;
+                case "model":
+                    comparator = (a, b) -> a.model.compareTo(b.model) < 0;
+                    break;
+                case "grade":
+                    comparator = (a, b) -> a.grade.compareTo(b.grade) < 0;
+                    break;
+                case "year":
+                    comparator = (a, b) -> a.year < b.year;
+                    break;
+                case "mileage":
+                    comparator = (a, b) -> a.mileage < b.mileage;
+                    break;
+                case "price":
+                    comparator = (a, b) -> a.price < b.price;
+                    break;
+                case "engineSize":
+                    comparator = (a, b) -> a.engineSize < b.engineSize;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid key: " + key);
+            }
+
+            return descending ? (a, b) -> !comparator.apply(a, b) : comparator;
+        }
+    }
+
+    public class CarGradeStore {
+        private Map<String, Map<Object, CarGrade>> searchEntries;
+        private int itemCount;
+
+        public CarGradeStore() {
+            searchEntries = new LinkedHashMap<>();
+            searchEntries.put("id", new LinkedHashMap<>());
+            searchEntries.put("grade", new LinkedHashMap<>());
+            searchEntries.put("condition", new LinkedHashMap<>());
+        }
+
+        public void store(CarGrade item) {
+            try {
+                item.id = itemCount;
+
+                for (String keyName : searchEntries.keySet()) {
+                    Field field = item.getClass().getDeclaredField(keyName);
+                    Object value = field.get(item);
+                    Map<Object, CarGrade> entry = searchEntries.get(keyName);
+
+                    entry.put(value, item);
+                }
+
+                itemCount++;
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+
+        public CarGrade search(String keyName, Object keyValue) {
+            try {
+                return searchEntries.get(keyName).get(keyValue);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public int size() {
+            return itemCount;
+        }
+    }
+
+    public class CarStockStore {
+        private Map<String, CarStock> stockMap;
+
+        public CarStockStore() {
+            stockMap = new LinkedHashMap<>();
+        }
+
+        public void store(CarInfo info) {
+            if (!stockMap.containsKey(info.manufacturer)) {
+                stockMap.put(info.manufacturer,
+                        new CarStock(stockMap.size() + 1, info.manufacturer));
+            }
+
+            CarStock stock = stockMap.get(info.manufacturer);
+            stock.setNumber(stock.getNumber() + 1);
+            stock.setPrice(stock.getPrice() + info.price);
+        }
+
+        public CarStock[] toArray() {
+            return stockMap.values().toArray(new CarStock[stockMap.size()]);
+        }
     }
 
     public class CarInfo {
-        private final int id;
-        private String manufacturer;
-        private String model;
-        private String grade;
-        private int year;
-        private double mileage;
-        private double price;
-        private double engineSize;
+        public int id;
+        public final String manufacturer;
+        public final String model;
+        public final int year;
+        public final double mileage;
+        public final double engineSize;
+        public final String grade;
+        public final double price;
 
-        public CarInfo(int id) {
-            this.id = id;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getManufacturer() {
-            return manufacturer;
-        }
-
-        public void setManufacturer(String manufacturer) {
+        public CarInfo(String manufacturer, String model, int year,
+                double mileage, double engineSize, String grade, double price) {
             this.manufacturer = manufacturer;
-        }
-
-        public String getModel() {
-            return model;
-        }
-
-        public void setModel(String model) {
             this.model = model;
-        }
-
-        public int getYear() {
-            return year;
-        }
-
-        public void setYear(int year) {
             this.year = year;
-        }
-
-        public double getMileage() {
-            return mileage;
-        }
-
-        public void setMileage(double mileage) {
             this.mileage = mileage;
-        }
-
-        public String getGrade() {
-            return grade;
-        }
-
-        public void setGrade(String grade) {
+            this.engineSize = engineSize;
             this.grade = grade;
+            this.price = price;
+        }
+    }
+
+    public class CarGrade {
+        public int id;
+        public final String grade;
+        public final String condition;
+        public final String description;
+
+        public CarGrade(String grade, String condition, String description) {
+            this.grade = grade;
+            this.condition = condition;
+            this.description = description;
+        }
+    }
+
+    public class CarStock {
+        public final int id;
+        public final String manufacturer;
+        private int number;
+        private double price;
+
+        public CarStock(int id, String manufacturer) {
+            this.id = id;
+            this.manufacturer = manufacturer;
         }
 
         public double getPrice() {
@@ -269,12 +405,12 @@ public class CarShop {
             this.price = price;
         }
 
-        public double getEngineSize() {
-            return engineSize;
+        public int getNumber() {
+            return number;
         }
 
-        public void setEngineSize(double engineSize) {
-            this.engineSize = engineSize;
+        public void setNumber(int number) {
+            this.number = number;
         }
     }
 }
